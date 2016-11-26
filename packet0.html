@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN'>
+<html xmlns='http://www.w3.org/1999/xhtml' lang='en' xml:lang='en'>
+<head>
+  <meta http-equiv='content-type' content='text/html; charset=utf-8' />
+  <meta name='description' content='falseHex provides simple powerful solutions to help secure your network.' />
+  <meta name='keywords' content='packetzero,hosts3d,logalysis,redscale,bluffer' />
+  <meta name='author' content='Del Castle' />
+  <link rel='stylesheet' type='text/css' href='daleri-single.css' title='Daleri Single' media='screen,projection' />
+  <link rel='icon' type='image/x-icon' href='img/packet_posse16.ico' />
+  <title>falseHex</title>
+</head>
+
+<body>
+<div id='wrap'>
+  <h1><a href='index.html'><img style='margin-right:12px' src='img/packet_posse.png' />falseHex</a></h1>
+  <p class='slogan'>Network Security Solutions</p>
+
+  <p class='toptabs'>
+    <a class='toptab' href='index.html'>Home</a><span class='hide'> | </span>
+    <a class='toptab active' href='packet0.html'>PacketZero</a><span class='hide'> | </span>
+    <a class='toptab' href='logalysis.html'>Logalysis</a><span class='hide'> | </span>
+    <a class='toptab' href='redscale.html'>Redscale</a><span class='hide'> | </span>
+    <a class='toptab' href='bluffer.html'>Bluffer</a><span class='hide'> | </span>
+    <a class='toptab' href='code.html'>Code</a>
+  </p>
+
+  <div id='maincontent'>
+    <h2>falseHex provides simple powerful solutions to help secure your network.</h2>
+
+    <p><b>PacketZero</b> is a 3D network monitor, displaying hosts and packet traffic. Features include support for multiple sensors (sensor0), analysis of packets to gather hostnames and services, configurable layout of subnetworks, recording/replaying of packet traffic, and the ability to filter packets by hosts, protocol or port.</p>
+    <p><b>sensor0</b> is a packet capture agent which reads and sends packet header information to PacketZero, locally or remotely. sensor0 also equates hostname to IP by reading DNS packets (UDP type A class IN standard query response). Multiple sensors can send information to multiple computers running PacketZero on the same subnet via broadcast.<p>
+
+    <h4>Downloads</h4>
+    <ul>
+      <li><b>PacketZero Source 1.0.2:</b> <a href='download/PacketZero-1.0.2.tar.gz'>PacketZero-1.0.2.tar.gz</a> (45892B MD5:ae13857d7712e683cc588a7203ae5619)</li>
+      <li><b>sensor0 Source 1.0.1:</b> <a href='download/sensor0-1.0.1.tar.gz'>sensor0-1.0.1.tar.gz</a> (6674B MD5:349c7827dfd25b3dee6506aff0f112e1)</li>
+      <li><b>sensor0 Simulator 0.1:</b> <a href='download/sensor0-sim.py'>sensor0-sim.py</a> (1288B MD5:1d5374f1578ba2970208f2cfd3f55736)</li>
+      <li><b>PacketZero man page 26 May 16:</b> <a href='download/packet0.1'>packet0.1</a></li>
+      <li><b>sensor0 man page 26 May 16:</b> <a href='download/sensor0.1'>sensor0.1</a></li>
+      <li><b>PacketZero README 26 May 16:</b> <a href='download/PacketZero_README.txt'>PacketZero_README.txt</a></li>
+    </ul>
+
+    <h4>Hardware Requirements - PacketZero</h4>
+    <ul>
+      <li>3-Button Scroll Mouse</li>
+      <li>OpenGL Support</li>
+    </ul>
+
+    <h4>Software Requirements</h4>
+    <ul>
+      <li>sensor0 requires libpcap/WinPcap.</li>
+      <li>PacketZero requires Simple DirectMedia Layer 2.0 (SDL2).</li>
+      <ul>
+        <li>Mac OS X: Download https://www.libsdl.org/tmp/release/SDL2-2.0.4.dmg, put SDL2.framework in /Library/Frameworks/</li>
+      </ul>
+    </ul>
+
+    <h4>Compiling</h4>
+    <ul>
+      <li><b>Linux:</b> Install g++, SDL2 (dev), libpcap (dev), compile using "compile-packet0.sh" and "compile-sensor0.sh" scripts.</li>
+      <li><b>Mac OS X:</b> Install Xcode, compile using "compile-packet0.sh" and "compile-sensor0.sh" scripts.</li>
+      <li><b>Windows (sensor0 only):</b> Install Visual Studio Community and WinPcap Developer Pack.</li>
+    </ul>
+
+    <h4>Installation</h4>
+    <ul>
+      <li><b>Linux, Mac OS X:</b></li>
+      <ul>
+        <li>Put executables "packet0" and "sensor0" in /usr/local/bin/</li>
+        <li>Put man pages "packet0.1" and "sensor0.1" in /usr/local/share/man/man1/</li>
+        <li>These directories may have to be created.</li>
+      </ul>
+    </ul>
+    <p>Firewall configuration: By default, sensor0 talks to PacketZero via UDP port 6333.</p>
+
+    <h4>Starting - sensor0</h4>
+    <p>Starting order does not matter, however if sensor0 is running and PacketZero is not, ICMP Port Unreachable (UDP port 6333) may be generated.</p>
+    <ul>
+      <li><b>Linux, Mac OS X:</b></li>
+        <pre>
+  sensor0 [-i &lt;interface/file&gt;] [-s &lt;id&gt;] [-h &lt;destination&gt;] [-u &lt;port&gt;] [-p] [-d]
+    -i &lt;interface&gt; - Listen on interface (en0, eth1, ppp0, wlan0, etc.); or
+       &lt;file&gt; - Read packets from pcap file.  Standard input is used if file is "-".
+    -s &lt;id&gt; - Identify packets from a specific sensor when multiple exist (1-255, default 1).
+    -h &lt;destination&gt; - PacketZero IP or broadcast address (default localhost).
+    -u &lt;port&gt; - PacketZero UDP port (default 6333).
+    -p - Enable promiscuous mode.
+    -d - Run as daemon.</pre>
+        <p>Omit "-i &lt;interface/file&gt;" to display an Interface List for selection.<br />
+           Capturing packets requires you start sensor0 as root.<br />
+           View syslog to assist troubleshooting.</p>
+      <li><b>Windows:</b></li>
+        <pre>
+  sensor0.exe [[[&lt;id&gt;] &lt;destination&gt;] &lt;port&gt;] [-p]
+    &lt;id&gt; - Identify packets from a specific sensor when multiple exist (1-255, default 1).
+    &lt;destination&gt; - PacketZero IP or broadcast address (default localhost).
+    &lt;port&gt; - PacketZero UDP port (default 6333).
+    -p - Enable promiscuous mode.</pre>
+    </ul>
+
+    <h4>Data Files - PacketZero</h4>
+    <p>Created in directory:</p>
+    <ul>
+      <li><b>Linux:</b> ~/.packet0/</li>
+      <li><b>Mac OS X:</b> ~/Library/Application Support/PacketZero/</li>
+    </ul>
+    <p>Files:</p>
+    <ul>
+      <li><b>controls.txt</b> - Controls</li>
+      <li><b>packet0_prefs</b> - Preferences</li>
+      <li><b>0network_0nl</b> - Network Layout On-Exit</li>
+      <li><b>1network_0nl</b> - Network Layout 1</li>
+      <li><b>2network_0nl</b> - Network Layout 2</li>
+      <li><b>3network_0nl</b> - Network Layout 3</li>
+      <li><b>4network_0nl</b> - Network Layout 4</li>
+      <li><b>netpos.txt</b> - CIDR Notation Net Position/Colour</li>
+      <li><b>traffic_0pt</b> - Packet Traffic Record</li>
+      <li><b>tmp_packet0</b> - Temporary Data</li>
+    </ul>
+
+    <h4>Net Positions - PacketZero</h4>
+    <p>If a host is not a member of any net position entries, it is placed in the Grey Zone. If a host is a member of multiple net position entries, the first entry is used. Line format for net position entries is "pos net x-position y-position z-position colour", eg. "pos 123.123.123.123/32 10 0 -10 green".</p>
+    <p>Positions:</p>
+    <ul>
+      <li><b>Grey/Red</b> - positive x-position</li>
+      <li><b>Blue/Green</b> - negative x-position</li>
+      <li><b>Up</b> - positive y-position</li>
+      <li><b>Down</b> - negative y-position</li>
+      <li><b>Grey/Blue</b> - positive z-position</li>
+      <li><b>Red/Green</b> - negative z-position</li>
+    </ul>
+    <p>Colours:</p>
+    <ul>
+      <li>none (where multiple colours are used)</li>
+      <li>default (grey)</li>
+      <li>orange</li>
+      <li>yellow</li>
+      <li>fluro</li>
+      <li>green</li>
+      <li>mint</li>
+      <li>aqua</li>
+      <li>blue</li>
+      <li>purple</li>
+      <li>violet</li>
+      <li>hold (place hosts in same position)</li>
+    </ul>
+
+    <h4>Start/Stop Local Sensor - PacketZero</h4>
+    <p>If sudo is required to start/stop a local sensor, the user starting sensor0 must be in /etc/sudoers. The default command to stop a local sensor is "killall sensor0", which will kill all sensor0 processes. Add the following to /etc/sudoers, replacing &lt;user&gt; with the required username:</p>
+      <pre>
+  &lt;user&gt; ALL=(root) NOPASSWD: /usr/local/bin/sensor0
+  &lt;user&gt; ALL=(root) NOPASSWD: /usr/bin/killall</pre>
+
+    <h4>Controls - PacketZero</h4>
+    <p>Press H key in PacketZero to show controls.</p>
+
+    <h4>Notes</h4>
+    <ul>
+      <li>Support only for IPv4.</li>
+      <li>IP headers with options are ignored.</li>
+      <li>Support for packets with optionless GRE or VLAN 802.1Q encapsulation.</li>
+      <li>By default hosts are added to PacketZero from packet source IP address, activate Add Destination Hosts to also add from destination IP address.</li>
+      <li>Anomalies are a new host or host service.</li>
+      <li>Clicking a host cluster will cycle through selecting hosts within.</li>
+      <li>Using the menu options to move/arrange a few thousand hosts may take a few minutes.</li>
+    </ul>
+
+    <h4>Reporting Bugs</h4>
+    <p>Report bugs to <a href='&#109;ailto&#58;falsehex&#64;g&#109;ail&#46;co&#109;'>falsehex&#64;g&#109;ail&#46;co&#109;</a></p>
+
+    <p class='bottomlinks'><a href='&#109;ailto&#58;falsehex&#64;g&#109;ail&#46;co&#109;'>Contact</a></p>
+  </div>
+
+  <p class='footer'>Copyright &copy; 2012-2016 falseHex<br />
+  Website template design by <a href='http://andreasviklund.com/'>Andreas Viklund</a></p>
+</div>
+</body>
+</html>

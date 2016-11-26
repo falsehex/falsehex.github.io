@@ -1,0 +1,121 @@
+.TH PACKET0 1 "26 May 16"
+.SH NAME
+packet0 \- 3D network monitor
+.SH SYNOPSIS
+.B packet0
+.SH DESCRIPTION
+.B PacketZero
+is a 3D network monitor, displaying hosts and packet traffic.
+Features include support for multiple sensors (sensor0), analysis of
+packets to gather hostnames and services, configurable layout of
+subnetworks, recording/replaying of packet traffic, and the ability to
+filter packets by hosts, protocol or port.
+.P
+Press H key in PacketZero to show controls.
+.SH "DATA FILES"
+Created in directory "~/.packet0/".
+.TP 15
+controls.txt
+Controls
+.TP
+packet0_prefs
+Preferences
+.TP
+0network_0nl
+Network Layout On\-Exit
+.TP
+1network_0nl
+Network Layout 1
+.TP
+2network_0nl
+Network Layout 2
+.TP
+3network_0nl
+Network Layout 3
+.TP
+4network_0nl
+Network Layout 4
+.TP
+netpos.txt
+CIDR Notation Net Position/Colour
+.TP
+traffic_0pt
+Packet Traffic Record
+.TP
+tmp_packet0
+Temporary Data
+.SH "NET POSITIONS"
+If a host is not a member of any net position entries, it is placed in
+the Grey Zone.  If a host is a member of multiple net position
+entries, the first entry is used.  Line format for net position
+entries is "pos net x\-position y\-position z\-position colour",
+.br
+eg. "pos 123.123.123.123/32 10 0 \-10 green".
+.P
+.I Positions:
+.TP 12
+Grey/Red
+positive x\-position
+.TP
+Blue/Green
+negative x\-position
+.TP
+Up
+positive y\-position
+.TP
+Down
+negative y\-position
+.TP
+Grey/Blue
+positive z\-position
+.TP
+Red/Green
+negative z\-position
+.P
+.I Colours:
+.P
+none (where multiple colours are used)
+.P
+default (grey)
+.P
+orange
+.P
+yellow
+.P
+fluro
+.P
+green
+.P
+mint
+.P
+aqua
+.P
+blue
+.P
+purple
+.P
+violet
+.P
+hold (place hosts in same position)
+.SH "START/STOP LOCAL SENSOR"
+If sudo is required to start/stop a local sensor, the user starting
+sensor0 must be in /etc/sudoers.  The default command to stop a local
+sensor is "killall sensor0", which will kill all sensor0 processes.
+.SH NOTES
+Firewall configuration: By default, sensor0 talks to PacketZero via
+UDP port 6333.  If sensor0 is running and PacketZero is not, ICMP Port
+Unreachable (UDP port 6333) may be generated.  View syslog to assist
+troubleshooting.  By default hosts are added from packet source IP
+address, activate Add Destination Hosts to also add from destination
+IP address.  Anomalies are a new host or host service.  Clicking a
+host cluster will cycle through selecting hosts within.  Using the
+menu options to move/arrange a few thousand hosts may take a few
+minutes.
+.SH "SEE ALSO"
+sensor0(1)
+.SH AUTHOR
+Written by Del Castle.
+.SH "REPORTING BUGS"
+Report bugs to <falsehex@gmail.com>
+.SH COPYRIGHT
+Copyright 2006\-2016 Del Castle

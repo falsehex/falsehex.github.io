@@ -1,0 +1,53 @@
+.TH SENSOR0 1 "26 May 16"
+.SH NAME
+sensor0 \- PacketZero sensor
+.SH SYNOPSIS
+.B sensor0 [\fB\-i\fR <interface/file>] [\fB\-s\fR <id>]
+[\fB\-h\fR <destination>] [\fB\-u\fR <port>] [\fB\-p\fR] [\fB\-d\fR]
+.SH DESCRIPTION
+.B sensor0
+is a packet capture agent which reads and sends packet header
+information to PacketZero, locally or remotely.  sensor0 also equates
+hostname to IP by reading DNS packets (UDP type A class IN standard
+query response).  Multiple sensors can send information to multiple
+computers running PacketZero on the same subnet via broadcast.
+.TP 18
+.B \-i\fR <interface>
+Listen on interface (en0, eth1, ppp0, wlan0, etc.); or
+.TP
+.B \ \ \fR <file>
+Read packets from pcap file.  Standard input is used if file is "\-".
+.TP
+.B \-s\fR <id>
+Identify packets from a specific sensor when multiple exist (1\-255,
+default 1).
+.TP
+.B \-h\fR <destination>
+PacketZero IP or broadcast address (default localhost).
+.TP
+.B \-u\fR <port>
+PacketZero UDP port (default 6333).
+.TP
+.B \-p
+Enable promiscuous mode.
+.TP
+.B \-d
+Run as daemon.
+.P
+Omit "-i <interface/file>" to display an Interface List for selection.
+.SH NOTES
+Firewall configuration: By default, sensor0 talks to PacketZero via
+UDP port 6333.  If sensor0 is running and PacketZero is not, ICMP Port
+Unreachable (UDP port 6333) may be generated.  Capturing packets
+requires you start sensor0 as root.  View syslog to assist
+troubleshooting.  Support only for IPv4.  IP headers with options are
+ignored.  Support for packets with optionless GRE or VLAN 802.1Q
+encapsulation.
+.SH "SEE ALSO"
+packet0(1)
+.SH AUTHOR
+Written by Del Castle.
+.SH "REPORTING BUGS"
+Report bugs to <falsehex@gmail.com>
+.SH COPYRIGHT
+Copyright 2006\-2016 Del Castle

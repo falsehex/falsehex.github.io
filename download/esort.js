@@ -1,4 +1,4 @@
-/* esort.js - Version 1.0.1  04 Nov 16
+/* esort.js - Version 1.0.2  22 Dec 16
    eSort - HTML Table Sort
    Copyright 2012-2016 Del Castle
 
@@ -49,7 +49,10 @@ function eSort()
   {
     if (aryTables[table].className.search("esort") != -1)
     {
-      for (cnt in aryTables[table].rows[0].cells) if (cnt >= colFirst) aryTables[table].rows[0].cells[cnt].onclick = function() { sortTable(this.parentNode.parentNode, this.cellIndex); }
+      for (cnt in aryTables[table].rows[0].cells)
+      {
+        if (cnt >= colFirst) aryTables[table].rows[0].cells[cnt].onclick = function() { sortTable(this.parentNode.parentNode, this.cellIndex); }
+      }
     }
   }
 }

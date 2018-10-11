@@ -4,11 +4,16 @@
 <script>
 function goSearch()
 {
-  for (var count = 0; count < 30; count++) document.getElementById('ifmBing').src = "https:\/\/www.bing.com\/search?q=" + Math.random().toString(36).substr(2, 8);
+  var ifmBing;
+  for (var count = 0; count < 30; count++)
+  {
+    ifmBing = document.createElement("iframe");
+    ifrm.setAttribute("src", "https:\/\/www.bing.com\/search?q=" + Math.random().toString(36).substr(2, 8));
+    document.body.appendChild(ifmBing);
+  }
 }
 </script>
 </head>
 <body onload='goSearch();'>
-<iframe id='ifmBing'></iframe>
 </body>
 </html>

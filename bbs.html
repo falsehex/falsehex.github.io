@@ -1,0 +1,14 @@
+<html>
+<head>
+<title>Bing Bulk Search</title>
+<script>
+function goSearch()
+{
+  for (var count = 0; count < 30; count++) document.getElementById('ifmBing').src = "https:\/\/www.bing.com\/search?q=" + Math.random().toString(36).substr(2, 8);
+}
+</script>
+</head>
+<body onload='goSearch();'>
+<iframe id='ifmBing'></iframe>
+</body>
+</html>

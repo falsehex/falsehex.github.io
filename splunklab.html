@@ -1,0 +1,48 @@
+<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN'>
+<html xmlns='http://www.w3.org/1999/xhtml' lang='en' xml:lang='en'>
+<head>
+  <meta http-equiv='content-type' content='text/html; charset=utf-8' />
+  <meta name='description' content='falseHex provides simple powerful solutions to help secure your network.' />
+  <meta name='keywords' content='packetzero,hosts3d,logalysis,redscale,bluffer' />
+  <meta name='author' content='Del Castle' />
+  <link rel='stylesheet' type='text/css' href='daleri-single.css' title='Daleri Single' media='screen,projection' />
+  <link rel='icon' type='image/x-icon' href='img/packet_posse16.ico' />
+  <title>falseHex</title>
+</head>
+
+<body>
+<div id='wrap'>
+  <h1><a href='index.html'><img style='margin-right:12px' src='img/packet_posse.png' />falseHex</a></h1>
+  <p class='slogan'>Network Security Solutions</p>
+
+  <p class='toptabs'>
+    <a class='toptab' href='index.html'>Home</a><span class='hide'> | </span>
+    <a class='toptab' href='packet0.html'>PacketZero</a><span class='hide'> | </span>
+    <a class='toptab' href='logalysis.html'>Logalysis</a><span class='hide'> | </span>
+    <a class='toptab' href='redscale.html'>Redscale</a><span class='hide'> | </span>
+    <a class='toptab' href='bluffer.html'>Bluffer</a><span class='hide'> | </span>
+    <a class='toptab active' href='splunklab.html'>Splunk Lab</a><span class='hide'> | </span>
+    <a class='toptab' href='code.html'>Code</a>
+  </p>
+
+  <div id='maincontent'>
+    <h2>falseHex provides simple powerful solutions to help secure your network.</h2>
+
+    <p>I'll document my Splunk Lab when I get time, for now here are some tools which you may find useful:</p>
+
+    <h4>Laconic 1.0.0 - Simple HTTP Server</h4>
+    <p><a href='download/laconic.pl'>laconic.pl</a> (5657B MD5:ca0b0afc80bbedc0c6f0a12d26ab7ddd)</p>
+    <p>Laconic Field Extraction: ^(?:[^ \n]* ){3}(?P&lt;src_ip&gt;[^:]+):(?P&lt;src_port&gt;\d+)\->(?P&lt;dest_ip&gt;[^:]+):(?P&lt;dest_port&gt;\d+)\s"(?P&lt;http_method&gt;[^\s]+)\s(?P&lt;uri_path&gt;[^"]+)"\s"(?P&lt;site&gt;[^"]+)"\s"(?P&lt;http_referrer&gt;[^"]+)"\s"(?P&lt;http_user_agent&gt;[^"]+)"</p>
+
+    <h4>Smurt 1.0.0 - SMTP Responder</h4>
+    <p><a href='download/smurt.pl'>smurt.pl</a> (5017B MD5:25f72d5ec5893c794becfbe7fd6937cb)</p>
+    <p>Smurt Field Extraction: ^(?:[^ \n]* ){3}(?P&lt;src_ip&gt;[^:]+):(?P&lt;src_port&gt;\d+)\->(?P&lt;dest_ip&gt;[^:]+):(?P&lt;dest_port&gt;\d+)\s(?P&lt;internal_message_id&gt;\d+)\s(?P&lt;size&gt;\d+)\s"(?P&lt;orig_src&gt;[^"]+)"\s"(?P&lt;src_user&gt;[^"]+)"\s"(?P&lt;subject&gt;[^"]+)"</p>
+
+    <p class='bottomlinks'><a href='&#109;ailto&#58;falsehex&#64;g&#109;ail&#46;co&#109;'>Contact</a></p>
+  </div>
+
+  <p class='footer'>Copyright &copy; 2012-2016 falseHex<br />
+  Website template design by <a href='http://andreasviklund.com/'>Andreas Viklund</a></p>
+</div>
+</body>
+</html>

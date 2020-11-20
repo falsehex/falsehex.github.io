@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-#  smurt.pl - Version 1.0.1  14 Nov 20
+#  smurt.pl - Version 1.0.2  21 Nov 20
 #  Smurt - SMTP Responder
 #  Copyright 2020 Del Castle
 #
@@ -23,7 +23,9 @@ use threads;
 use Fcntl;
 use File::Path qw(make_path);
 use IO::Socket::INET;
+use MIME::Base64 qw(encode_base64);
 
+my $optDump = 1;  #write emails to file
 my $strServer = 'smtp.server.com';  #server name
 my @txtDays = qw(Sun Mon Tue Wed Thu Fri Sat Sun);
 my @txtMonths = qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec);
@@ -40,6 +42,14 @@ $SIG{TERM} = sub { close($sockListen); };
 
 my $cntMail = time();  #number to identify email
 
+#print to socket and file
+sub printOut
+{
+  my ($sockOut, $fileOut, $strOut) = @_;
+  print $sockOut $strOut;  #print to socket
+  $$fileOut .= "S: $strOut" if ($optDump);  #print to file
+} 
+
 #process email
 sub processMail
 {
@@ -47,77 +57,98 @@ sub processMail
   my $idMail = shift;  #email identifier
   my $flagClient = fcntl($sockClient, F_GETFL, 0);
   fcntl($sockClient, F_SETFL, $flagClient | O_NONBLOCK);  #make client socket non-blocking
-  my $addrClient = $sockClient->peerhost() . ':' . $sockClient->peerport();  #client ip address:port
-  my $addrServer = $sockClient->sockhost() . ':25';  #server ip address:port
+  my $strConn = $sockClient->peerhost() . ':' . $sockClient->peerport() . '->' . $sockClient->sockhost() . ':25';  #connection ip addresses:ports
 
   my $timeOut = 30;  #socket timeout
+  my $optAuth = 0;  #smtp auth tracking
+  my $recvSize = 0;  #received data size
   my $strLine;  #read line
+  my $strMail = "$strConn\r\n\r\n";  #email transaction
   my ($strMTA, $strFrom, $strSubject) = ('', '-', '-');  #client email fields
-  my ($valSec, $valMin, $valHour, $valMday, $valMon, $valYear, $valWday, $valYday, $valIsdst) = gmtime();  #current UTC time
 
-  my $filePath = sprintf('/var/log/mail/20%02d/%02d/%02d', $valYear - 100, $valMon + 1, $valMday);  #save file path
-  make_path($filePath, { mode => 0750 });  #create save file path if it doesn't exist
-  my $fileMail = "$filePath/mail-$idMail.txt";
-  my $outMail;
-  open($outMail, '>', $fileMail);  #write email received to file
-  print $outMail "$addrClient->$addrServer\r\n";
-
-  print $sockClient "220 $strServer SMTP Ready\r\n";
+  printOut ($sockClient, \$strMail, "220 $strServer SMTP Ready\r\n");
 
   while ($timeOut)
   {
     while ($strLine = <$sockClient>)  #read line from client socket
     {
-      print $outMail $strLine;  #write line to file
-      print $outMail "\r\n" if ($strLine !~ /\n$/);
- 
-      #reply to SMTP commands
-      if ($strLine =~ /^HELO\s([\w\-\.]+)/i)
+      $recvSize += length($strLine);
+      if ($optDump)
       {
-        $strMTA = $1;
-        print $sockClient "250 Hello $strMTA\r\n";
+        $strMail .= "C: $strLine";  #write line to file
+        $strMail .= "\r\n" if ($strLine !~ /\n$/);
       }
-      elsif ($strLine =~ /^EHLO\s([\w\-\.]+)/i)
+ 
+      #reply to smtp commands
+      if ($strLine =~ /^HELO\s\[?([\w\-\.]+)\]?/i)
       {
         $strMTA = $1;
-        print $sockClient "250-$strServer Hello $strMTA\r\n250-SIZE 20480000\r\n250 DSN\r\n";
+        printOut($sockClient, \$strMail, "250 Hello $strMTA\r\n");
+      }
+      elsif ($strLine =~ /^EHLO\s\[?([\w\-\.]+)\]?/i)
+      {
+        $strMTA = $1;
+        printOut($sockClient, \$strMail, "250-$strServer Hello $strMTA\r\n");
+        printOut($sockClient, \$strMail, "250-SIZE 5242880\r\n");
+        printOut($sockClient, \$strMail, "250 DSN\r\n");
       }
       elsif ($strLine =~ /^STARTTLS\r\n/i)
       {
-        print $sockClient "454 TLS currently unavailable\r\n";
+        printOut($sockClient, \$strMail, "454 TLS currently unavailable\r\n");
       }
-      elsif ($strLine =~ /^AUTH\s/i)
+      elsif ($strLine =~ /^AUTH\sPLAIN\r\n/i)
       {
-        print $sockClient "235 2.7.0 Authentication successful\r\n";
+        $optAuth = 2;
+        printOut($sockClient, \$strMail, "334\r\n");
+      }
+      elsif ($strLine =~ /^AUTH\sLOGIN\r\n/i)
+      {
+        $optAuth = 1;
+        printOut($sockClient, \$strMail, "334 VXNlcm5hbWU6\r\n");  #Username:
+      }
+      elsif ($strLine =~ /^AUTH\sCRAM-MD5\r\n/i)
+      {
+        $optAuth = 2;
+        printOut($sockClient, \$strMail, "334 " . encode_base64(time() . '.' . time()) ."\r\n");
       }
       elsif ($strLine =~ /^MAIL\sFROM:<(.+?)>/i)
       {
         $strFrom = $1;
-        $strFrom =~ s/(")/sprintf("%%%02X", ord($1))/seg;  #encode quotes
-        print $sockClient "250 OK\r\n";
+        $strFrom =~ s/(")/sprintf('%%%02X', ord($1))/seg;  #encode quotes
+        printOut($sockClient, \$strMail, "250 OK\r\n");
       }
       elsif ($strLine =~ /^(RCPT\sTO:|\.\r\n|RSET\r\n|SEND\sFROM:|SOML\sFROM:|SAML\sFROM:|VRFY\s|EXPN\s|NOOP|TURN\r\n)/i)
       {
-        print $sockClient "250 OK\r\n";
+        printOut($sockClient, \$strMail, "250 OK\r\n");
       }
       elsif ($strLine =~ /^DATA\r\n/i)
       {
-        print $sockClient "354 End data with <CR><LF>.<CR><LF>\r\n";
+        printOut($sockClient, \$strMail, "354 End data with <CR><LF>.<CR><LF>\r\n");
       }
       elsif ($strLine =~ /^HELP/i)
       {
-        print $sockClient "214 Server\r\n";
+        printOut($sockClient, \$strMail, "214 See RFC 5321\r\n");
       }
       elsif ($strLine =~ /^QUIT\r\n/i)
       {
-        print $sockClient "221 Bye\r\n";
         $timeOut = 0;
+        printOut($sockClient, \$strMail, "221 Bye\r\n");
         last;
       }
       elsif ($strLine =~ /^Subject:\s?(.+)\r\n$/i)
       {
         $strSubject = $1 if ($strSubject eq '-');
-        $strSubject =~ s/(")/sprintf("%%%02X", ord($1))/seg;  #encode quotes
+        $strSubject =~ s/(")/sprintf('%%%02X', ord($1))/seg;  #encode quotes
+      }
+      elsif ($optAuth == 1)
+      {
+        $optAuth = 2;
+        printOut($sockClient, \$strMail, "334 UGFzc3dvcmQ6\r\n");  #Password:
+      }
+      elsif ($optAuth == 2)
+      {
+        $optAuth = 0;
+        printOut($sockClient, \$strMail, "235 2.7.0 Authentication successful\r\n");
       }
     }
     if ($timeOut)
@@ -127,13 +158,23 @@ sub processMail
     }
   }
 
-  close($outMail);  #close email received file
-
   if ($strMTA ne '')
   {
+    my ($valSec, $valMin, $valHour, $valMday, $valMon, $valYear, $valWday, $valYday, $valIsdst) = gmtime();  #current utc time
+    if ($optDump)
+    {
+      my $filePath = sprintf('/var/log/mail/20%02d/%02d/%02d', $valYear - 100, $valMon + 1, $valMday);  #save file path
+      make_path($filePath, { mode => 0750 });  #create save file path if it doesn't exist
+      my $fileMail = "$filePath/mail-$idMail.txt";
+      my $outMail;
+      open($outMail, '>', $fileMail);  #write email to file
+      print $outMail $strMail;
+      close($outMail);  #close email file
+    }
+
     my $outLog;
     open($outLog, '>>', '/var/log/smtp.log');  #open mail log
-    print $outLog sprintf('%s %02d %02d:%02d:%02d', $txtMonths[$valMon], $valMday, $valHour, $valMin, $valSec) . " $addrClient->$addrServer $idMail \"$strMTA\" \"$strFrom\" \"$strSubject\" " . (-s $fileMail) . "\n";  #log mail fields
+    print $outLog sprintf('%s %02d %02d:%02d:%02d', $txtMonths[$valMon], $valMday, $valHour, $valMin, $valSec) . " $strConn $idMail \"$strMTA\" \"$strFrom\" \"$strSubject\" $recvSize\n";  #log mail fields
     close($outLog);  #close log file
   }
 
@@ -149,4 +190,4 @@ while (my $sockAccept = $sockListen->accept)
   async(\&processMail, $sockAccept, ++$cntMail)->detach;
 }
 
-sleep(10);  #wait for threads to finish
+sleep(5);  #wait for threads to finish

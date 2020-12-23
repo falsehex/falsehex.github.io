@@ -9,6 +9,8 @@ function goSearch()
   {
     ifmBing = document.createElement("iframe");
     ifmBing.setAttribute("src", "https:\/\/www.bing.com\/search?q=" + Math.random().toString(36).substr(2, 8));
+    ifmBing.setAttribute("height", "100%");
+    ifmBing.setAttribute("width", "100%");
     document.body.appendChild(ifmBing);
   }
 }

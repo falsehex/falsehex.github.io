@@ -4,12 +4,9 @@
 <script>
 function goSearch()
 {
-  var ifmBing;
   for (var count = 0; count < 100; count++)
   {
-    ifmBing = document.createElement("iframe");
-    ifmBing.setAttribute("src", "https:\/\/www.bing.com\/search?q=" + Math.random().toString(36).substr(2, 8));
-    document.body.appendChild(ifmBing);
+    window.open("https:\/\/www.bing.com\/search?q=" + Math.random().toString(36).substr(2, 8), "_blank");
   }
 }
 </script>

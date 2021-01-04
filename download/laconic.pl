@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 
-#  laconic.pl - Version 1.0.3  13 Dec 20
+#  laconic.pl - Version 1.0.4  04 Jan 21
 #  Laconic - Simple HTTP Server
-#  Copyright 2020 Del Castle
+#  Copyright 2020-2021 Del Castle
 #
 #  Installation:
 #    cp laconic.pl /usr/local/bin/
@@ -35,7 +35,7 @@ my @txtMonths = qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec);
 my %valMonths = qw(january 1 february 2 march 3 april 4 may 5 june 6 july 7 august 8 september 9 october 10 november 11 december 12);
 
 #listening socket to receive request
-my $sockListen = IO::Socket::INET->new(Listen => 100,
+my $sockListen = IO::Socket::INET->new(Listen => 10,
                                        LocalPort => 8123,
                                        Proto => 'tcp',
                                        ReuseAddr => 1) or die "laconic error: new listen socket failed\n";
@@ -56,7 +56,7 @@ sub createFile
   if (! -e $_[0])
   {
     my $outFile;
-    open($outFile, '>', $_[0]) or die "laconic error: open new file failed\n";  #open new file
+    open($outFile, '>', $_[0]) or die "laconic error: open new file failed - $!\n";  #open new file
     print $outFile $_[1];  #write contents to file
     close($outFile);
   }
@@ -75,7 +75,7 @@ sub wanted
     my $fileName = $File::Find::name;
     $fileName =~ s/\/var\/www//;  #remove path
     my $inFile;
-    open($inFile, '<:raw', $File::Find::name) or die "laconic error: open find file failed\n";
+    open($inFile, '<:raw', $File::Find::name) or die "laconic error: open find file failed - $!\n";
     read($inFile, $filesRaw{$fileName}, -s $inFile);  #read full file
     close($inFile);
     gzip \$filesRaw{$fileName} => \$filesGzip{$fileName} or die "laconic error: gzip file failed - $GzipError\n";  #file gzip copy
@@ -120,7 +120,8 @@ sub processWeb
   my $idWeb = shift;  #request identifier
   my $flagClient = fcntl($sockClient, F_GETFL, 0) or die "laconic error: fcntl F_GETFL failed\n";
   fcntl($sockClient, F_SETFL, $flagClient | O_NONBLOCK) or die "laconic error: fcntl F_SETFL failed\n";  #make client socket non-blocking
-  my $strConn = $sockClient->peerhost() . ':' . $sockClient->peerport() . '->' . $sockClient->sockhost() . ':80';  #connection ip addresses:ports
+  my $strConn = '';  #connection ip addresses:ports
+  $strConn = $sockClient->peerhost() . ':' . $sockClient->peerport() . '->' . $sockClient->sockhost() . ':80' if ($sockClient->connected());
   my $sockSelect = IO::Select->new($sockClient);
   my @sockReady;
 
@@ -141,7 +142,7 @@ sub processWeb
         {
           my $dataHTML;
           my $inFile;
-          open($inFile, '<', $fileName) or die "laconic error: open request file failed\n";
+          open($inFile, '<', $fileName) or die "laconic error: open request file failed - $!\n";
           read($inFile, $dataHTML, -s $inFile);  #read full file
           close($inFile);
           $dataHTML =~ s/&/&amp;/sg;  #encode reserved &
@@ -211,7 +212,7 @@ sub processWeb
         my $outWeb;
         if ($optDump)
         {
-          open($outWeb, '>', $fileWeb) or die "laconic error: open dump file failed\n";  #write request to file
+          open($outWeb, '>', $fileWeb) or die "laconic error: open dump file failed - $!\n";  #write request to file
           print $outWeb "$strConn\r\n\r\n";
           print $outWeb $strLine;  #write line to file
         }
@@ -282,7 +283,7 @@ sub processWeb
         close($outWeb) if ($optDump);  #close request file
 
         my $outLog;
-        open($outLog, '>>', '/var/log/http.log') or die "laconic error: open log file failed\n";  #open http log
+        open($outLog, '>>', '/var/log/http.log') or die "laconic error: open log file failed - $!\n";  #open http log
         print $outLog sprintf('%s %02d %02d:%02d:%02d', $txtMonths[$valMon], $valMday, $valHour, $valMin, $valSec) . " $strConn $idWeb \"$strMethod $strURL\" \"$strHost\" \"$strReferer\" \"$strAgent\" " . substr($strStatus, 0, 3) . " $recvSize\n";  #log http request
         close($outLog);  #close log file
       }

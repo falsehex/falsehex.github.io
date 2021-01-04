@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 
-#  smurt.pl - Version 1.0.3  13 Dec 20
+#  smurt.pl - Version 1.0.4  04 Jan 21
 #  Smurt - SMTP Responder
-#  Copyright 2020 Del Castle
+#  Copyright 2020-2021 Del Castle
 #
 #  Installation:
 #    cp smurt.pl /usr/local/bin/
@@ -30,7 +30,7 @@ my @txtDays = qw(Sun Mon Tue Wed Thu Fri Sat Sun);
 my @txtMonths = qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec);
 
 #listening socket to receive email
-my $sockListen = IO::Socket::INET->new(Listen => 100,
+my $sockListen = IO::Socket::INET->new(Listen => 10,
                                        LocalPort => 5123,
                                        Proto => 'tcp',
                                        ReuseAddr => 1) or die "smurt error: new listen socket failed\n";
@@ -56,7 +56,8 @@ sub processMail
   my $idMail = shift;  #email identifier
   my $flagClient = fcntl($sockClient, F_GETFL, 0) or die "smurt error: fcntl F_GETFL failed\n";
   fcntl($sockClient, F_SETFL, $flagClient | O_NONBLOCK) or die "smurt error: fcntl F_SETFL failed\n";  #make client socket non-blocking
-  my $strConn = $sockClient->peerhost() . ':' . $sockClient->peerport() . '->' . $sockClient->sockhost() . ':25';  #connection ip addresses:ports
+  my $strConn = '';  #connection ip addresses:ports
+  $strConn = $sockClient->peerhost() . ':' . $sockClient->peerport() . '->' . $sockClient->sockhost() . ':25' if ($sockClient->connected());
 
   my $timeOut = 30;  #socket timeout
   my $optAuth = 0;  #smtp auth tracking
@@ -166,13 +167,13 @@ sub processMail
       make_path($filePath, { mode => 0750 });  #create save file path if it doesn't exist
       my $fileMail = "$filePath/mail-$idMail.txt";
       my $outMail;
-      open($outMail, '>', $fileMail) or die "smurt error: open dump file failed\n";  #write email to file
+      open($outMail, '>', $fileMail) or die "smurt error: open dump file failed - $!\n";  #write email to file
       print $outMail $strMail;
       close($outMail);  #close email file
     }
 
     my $outLog;
-    open($outLog, '>>', '/var/log/smtp.log') or die "smurt error: open log file failed\n";  #open mail log
+    open($outLog, '>>', '/var/log/smtp.log') or die "smurt error: open log file failed - $!\n";  #open mail log
     print $outLog sprintf('%s %02d %02d:%02d:%02d', $txtMonths[$valMon], $valMday, $valHour, $valMin, $valSec) . " $strConn $idMail \"$strMTA\" \"$strFrom\" \"$strSubject\" $recvSize\n";  #log mail fields
     close($outLog);  #close log file
   }

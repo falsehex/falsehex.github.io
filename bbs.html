@@ -2,20 +2,27 @@
 <head>
 <title>Bing Bulk Search</title>
 <script>
-function goSearch()
+function goSearch(link)
 {
-  var strBing, ancBing;
+  var emdBing = document.getElementById("emdBing");
+  ancBing.setAttribute("src", link);
+}
+
+function listSearch()
+{
+  var strBing, anrBing;
   for (var count = 0; count < 100; count++)
   {
     strBing = Math.random().toString(36).substr(2, 8);
-    ancBing = document.createElement("a");
-    ancBing.setAttribute("href", "https:\/\/www.bing.com\/search?q=" + strBing);
-    ancBing.innerHTML = strBing;
-    document.body.appendChild(ancBing);
+    anrBing = document.createElement("a");
+    anrBing.setAttribute("href", "javascript:goSearch('https:\/\/www.bing.com\/search?q=" + strBing + "')");
+    anrBing.innerHTML = strBing + "<br />";
+    document.body.appendChild(anrBing);
   }
 }
 </script>
 </head>
-<body onload='goSearch();'>
+<body onload='listSearch();'>
+  <embed id='emdBing' type='text/html' width='100' height='20'>
 </body>
 </html>

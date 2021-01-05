@@ -11,12 +11,12 @@ function goSearch(link)
 function listSearch()
 {
   var strBing, anrBing;
-  for (var count = 0; count < 100; count++)
+  for (var count = 0; count < 10; count++)
   {
     strBing = Math.random().toString(36).substr(2, 8);
     anrBing = document.createElement("a");
     anrBing.setAttribute("href", "javascript:goSearch('https:\/\/www.bing.com\/search?q=" + strBing + "')");
-    anrBing.innerHTML = strBing + "<br />";
+    anrBing.innerHTML = strBing + "&nbsp;&nbsp;&nbsp;&nbsp;";
     document.body.appendChild(anrBing);
   }
   var emdBing = document.createElement("embed");

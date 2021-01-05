@@ -4,12 +4,12 @@
 <script>
 function goSearch()
 {
-  var emdBing;
+  var ancBing;
   for (var count = 0; count < 100; count++)
   {
-    emdBing = document.createElement("embed");
-    emdBing.setAttribute("src", "https:\/\/www.bing.com\/search?q=" + Math.random().toString(36).substr(2, 8));
-    document.body.appendChild(emdBing);
+    ancBing = document.createElement("a");
+    ancBing.setAttribute("href", "https:\/\/www.bing.com\/search?q=" + Math.random().toString(36).substr(2, 8));
+    document.body.appendChild(ancBing);
   }
 }
 </script>

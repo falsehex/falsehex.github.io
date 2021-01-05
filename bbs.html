@@ -4,11 +4,13 @@
 <script>
 function goSearch()
 {
-  var ancBing;
+  var strBing, ancBing;
   for (var count = 0; count < 100; count++)
   {
+    strBing = Math.random().toString(36).substr(2, 8);
     ancBing = document.createElement("a");
-    ancBing.setAttribute("href", "https:\/\/www.bing.com\/search?q=" + Math.random().toString(36).substr(2, 8));
+    ancBing.setAttribute("href", "https:\/\/www.bing.com\/search?q=" + strBing);
+    ancBing.innerHTML = strBing;
     document.body.appendChild(ancBing);
   }
 }

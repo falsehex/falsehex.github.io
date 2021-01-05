@@ -19,10 +19,15 @@ function listSearch()
     anrBing.innerHTML = strBing + "<br />";
     document.body.appendChild(anrBing);
   }
+  emdBing = document.createElement("emd");
+  emdBing.setAttribute("id", "emdBing");
+  emdBing.setAttribute("type", "text/html");
+  emdBing.setAttribute("width", "1024");
+  emdBing.setAttribute("height", "800");
+  document.body.appendChild(emdBing);
 }
 </script>
 </head>
 <body onload='listSearch();'>
-  <embed id='emdBing' type='text/html' width='1024' height='800'><br />
 </body>
 </html>

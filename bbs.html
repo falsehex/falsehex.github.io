@@ -4,8 +4,8 @@
 <script>
 function goSearch(link)
 {
-  var emdBing = document.getElementById("emdBing");
-  emdBing.setAttribute("src", link);
+  var ifmBing = document.getElementById("ifmBing");
+  ifmBing.setAttribute("src", link);
 }
 
 function listSearch()
@@ -20,12 +20,11 @@ function listSearch()
     document.body.appendChild(anrBing);
   }
   anrBing.innerHTML += "<br />";
-  var emdBing = document.createElement("embed");
-  emdBing.setAttribute("id", "emdBing");
-  emdBing.setAttribute("type", "text/html");
-  emdBing.setAttribute("width", "1024");
-  emdBing.setAttribute("height", "800");
-  document.body.appendChild(emdBing);
+  var ifmBing = document.createElement("iframe");
+  ifmBing.setAttribute("id", "emdBing");
+  ifmBing.setAttribute("width", "1024");
+  ifmBing.setAttribute("height", "800");
+  document.body.appendChild(ifmBing);
 }
 </script>
 </head>

@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-#  smurt.pl - Version 1.0.4  04 Jan 21
+#  smurt.pl - Version 1.0.5  10 Feb 21
 #  Smurt - SMTP Responder
 #  Copyright 2020-2021 Del Castle
 #
@@ -63,9 +63,9 @@ sub processMail
   my $optAuth = 0;  #smtp auth tracking
   my $recvSize = 0;  #received data size
   my $strLine;  #read line
-  my $strMail = "$strConn\r\n\r\n";  #email transaction
   my ($strMTA, $strFrom, $strSubject) = ('', '-', '-');  #client email fields
 
+  my $strMail = "$strConn\r\n\r\n";  #email transaction
   printOut ($sockClient, \$strMail, "220 $strServer SMTP Ready\r\n");
 
   while ($timeOut)
@@ -167,15 +167,19 @@ sub processMail
       make_path($filePath, { mode => 0750 });  #create save file path if it doesn't exist
       my $fileMail = "$filePath/mail-$idMail.txt";
       my $outMail;
-      open($outMail, '>', $fileMail) or die "smurt error: open dump file failed - $!\n";  #write email to file
-      print $outMail $strMail;
-      close($outMail);  #close email file
+      if (open($outMail, '>', $fileMail))  #write email to file
+      {
+        print $outMail $strMail;
+        close($outMail);  #close email file
+      }
     }
 
     my $outLog;
-    open($outLog, '>>', '/var/log/smtp.log') or die "smurt error: open log file failed - $!\n";  #open mail log
-    print $outLog sprintf('%s %02d %02d:%02d:%02d', $txtMonths[$valMon], $valMday, $valHour, $valMin, $valSec) . " $strConn $idMail \"$strMTA\" \"$strFrom\" \"$strSubject\" $recvSize\n";  #log mail fields
-    close($outLog);  #close log file
+    if (open($outLog, '>>', '/var/log/smtp.log'))  #open mail log
+    {
+      print $outLog sprintf('%s %02d %02d:%02d:%02d', $txtMonths[$valMon], $valMday, $valHour, $valMin, $valSec) . " $strConn $idMail \"$strMTA\" \"$strFrom\" \"$strSubject\" $recvSize\n";  #log mail fields
+      close($outLog);  #close log file
+    }
   }
 
   shutdown($sockClient, SHUT_RDWR);  #shutdown client socket

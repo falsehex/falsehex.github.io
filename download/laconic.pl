@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-#  laconic.pl - Version 1.0.4  04 Jan 21
+#  laconic.pl - Version 1.0.5  10 Feb 21
 #  Laconic - Simple HTTP Server
 #  Copyright 2020-2021 Del Castle
 #
@@ -110,7 +110,7 @@ sub printOut
 {
   my ($sockOut, $fileOut, $strOut) = @_;
   print $sockOut $strOut if ($sockOut->connected());  #print to socket
-  print $fileOut $strOut if ($optDump);  #print to file
+  $$fileOut .= $strOut if ($optDump);  #print to file
 }
 
 #process request
@@ -140,38 +140,40 @@ sub processWeb
         my $fileName = sprintf('/var/log/%s/%d/%02d/%02d/%s-%d.txt', $idType, $dateYear, $valMonths{$dateMonth}, $dateDay, $idType, $idFile);
         if (-e -s $fileName)
         {
-          my $dataHTML;
           my $inFile;
-          open($inFile, '<', $fileName) or die "laconic error: open request file failed - $!\n";
-          read($inFile, $dataHTML, -s $inFile);  #read full file
-          close($inFile);
-          $dataHTML =~ s/&/&amp;/sg;  #encode reserved &
-          $dataHTML =~ s/</&lt;/sg;  #encode reserved <
-          $dataHTML =~ s/>/&gt;/sg;  #encode reserved >
-          $dataHTML = "<html><head><title>" . ucfirst($idType) . " - $idFile</title></head><body><pre>$dataHTML</pre></body></html>";
-
-          my $dataSize = length($dataHTML);
-          print $sockClient "HTTP/1.1 200 OK\r\n",
-                            "Date: " . timeHTTP(time()) . "\r\n",
-                            "Server: Laconic\r\n",
-                            "Last-Modified: " . timeHTTP((stat($fileName))[9]) . "\r\n",
-                            "Connection: close\r\n",
-                            "Content-Type: text/html\r\n",
-                            "Accept-Ranges: none\r\n",
-                            "Content-Length: $dataSize\r\n\r\n" if ($sockClient->connected());
-          my $dataOffset = 0;  #data chunk offset
-          while ($dataOffset < $dataSize)
+          if (open($inFile, '<', $fileName))
           {
-            if (@sockReady = $sockSelect->can_write(3))  #send buffer clear
+            my $dataHTML;
+            read($inFile, $dataHTML, -s $inFile);  #read full file
+            close($inFile);
+            $dataHTML =~ s/&/&amp;/sg;  #encode reserved &
+            $dataHTML =~ s/</&lt;/sg;  #encode reserved <
+            $dataHTML =~ s/>/&gt;/sg;  #encode reserved >
+            $dataHTML = "<html><head><title>" . ucfirst($idType) . " - $idFile</title></head><body><pre>$dataHTML</pre></body></html>";
+
+            my $dataSize = length($dataHTML);
+            print $sockClient "HTTP/1.1 200 OK\r\n",
+                              "Date: " . timeHTTP(time()) . "\r\n",
+                              "Server: Laconic\r\n",
+                              "Last-Modified: " . timeHTTP((stat($fileName))[9]) . "\r\n",
+                              "Connection: close\r\n",
+                              "Content-Type: text/html\r\n",
+                              "Accept-Ranges: none\r\n",
+                              "Content-Length: $dataSize\r\n\r\n" if ($sockClient->connected());
+            my $dataOffset = 0;  #data chunk offset
+            while ($dataOffset < $dataSize)
             {
-              if ($sockClient->connected())
+              if (@sockReady = $sockSelect->can_write(3))  #send buffer clear
               {
-                print $sockClient substr($dataHTML, $dataOffset, 8192);  #send file in chunks
-                $dataOffset += 8192;
-              }
-              else
-              {
-                last;
+                if ($sockClient->connected())
+                {
+                  print $sockClient substr($dataHTML, $dataOffset, 8192);  #send file in chunks
+                  $dataOffset += 8192;
+                }
+                else
+                {
+                  last;
+                }
               }
             }
           }
@@ -204,28 +206,22 @@ sub processWeb
             }
           }
         }
+        my $filePtr = \$filesRaw{$fileHTML};  #send raw file
 
-        my ($valSec, $valMin, $valHour, $valMday, $valMon, $valYear, $valWday, $valYday, $valIsdst) = gmtime();  #current utc time
-        my $filePath = sprintf('/var/log/web/20%02d/%02d/%02d', $valYear - 100, $valMon + 1, $valMday);  #save file path
-        make_path($filePath, { mode => 0750 }) if ($optDump);  #create save file path if it doesn't exist
-        my $fileWeb = "$filePath/web-$idWeb.txt";
-        my $outWeb;
+        my $strWeb = "$strConn\r\n\r\n";
+        my $recvSize = length($strLine);  #received data size
         if ($optDump)
         {
-          open($outWeb, '>', $fileWeb) or die "laconic error: open dump file failed - $!\n";  #write request to file
-          print $outWeb "$strConn\r\n\r\n";
-          print $outWeb $strLine;  #write line to file
+          $strWeb .= $strLine;  #write line to file
+          $strWeb .= "\r\n" if ($strLine !~ /\n$/);
         }
-
-        my $filePtr = \$filesRaw{$fileHTML};  #send raw file
-        my $recvSize = length($strLine);  #received data size
         while ($strLine = <$sockClient>)
         {
           $recvSize += length($strLine);
           if ($optDump)
           {
-            print $outWeb $strLine;  #write line to file
-            print $outWeb "\r\n" if ($strLine !~ /\n$/);
+            $strWeb .= $strLine;  #write line to file
+            $strWeb .= "\r\n" if ($strLine !~ /\n$/);
           }
 
           if ($strLine =~ /^Host:\s(.+)\r\n$/)
@@ -250,16 +246,16 @@ sub processWeb
         }
 
         my $fileSize = length($$filePtr);
-        print $outWeb "\r\n\r\n" if ($optDump);
-        printOut($sockClient, $outWeb, "HTTP/1.1 $strStatus\r\n");
-        printOut($sockClient, $outWeb, "Date: " . timeHTTP(time()) . "\r\n");
-        printOut($sockClient, $outWeb, "Server: Laconic\r\n");
-        printOut($sockClient, $outWeb, "Last-Modified: " . timeHTTP($filesMod{$fileHTML}) . "\r\n");
-        printOut($sockClient, $outWeb, "Connection: close\r\n");
-        printOut($sockClient, $outWeb, "Content-Encoding: gzip\r\n") if ($filePtr == \$filesGzip{$fileHTML});
-        printOut($sockClient, $outWeb, "Content-Type: " . mimeHTTP($fileHTML) . "\r\n");
-        printOut($sockClient, $outWeb, "Accept-Ranges: none\r\n");
-        printOut($sockClient, $outWeb, "Content-Length: $fileSize\r\n\r\n");
+        $strWeb .= "\r\n\r\n" if ($optDump);
+        printOut($sockClient, \$strWeb, "HTTP/1.1 $strStatus\r\n");
+        printOut($sockClient, \$strWeb, "Date: " . timeHTTP(time()) . "\r\n");
+        printOut($sockClient, \$strWeb, "Server: Laconic\r\n");
+        printOut($sockClient, \$strWeb, "Last-Modified: " . timeHTTP($filesMod{$fileHTML}) . "\r\n");
+        printOut($sockClient, \$strWeb, "Connection: close\r\n");
+        printOut($sockClient, \$strWeb, "Content-Encoding: gzip\r\n") if ($filePtr == \$filesGzip{$fileHTML});
+        printOut($sockClient, \$strWeb, "Content-Type: " . mimeHTTP($fileHTML) . "\r\n");
+        printOut($sockClient, \$strWeb, "Accept-Ranges: none\r\n");
+        printOut($sockClient, \$strWeb, "Content-Length: $fileSize\r\n\r\n");
         if ($strMethod eq 'GET')
         {
           my $fileOffset = 0;  #file chunk offset
@@ -280,12 +276,26 @@ sub processWeb
           }
         }
 
-        close($outWeb) if ($optDump);  #close request file
+        my ($valSec, $valMin, $valHour, $valMday, $valMon, $valYear, $valWday, $valYday, $valIsdst) = gmtime();  #current utc time
+        if ($optDump)
+        {
+          my $filePath = sprintf('/var/log/web/20%02d/%02d/%02d', $valYear - 100, $valMon + 1, $valMday);  #save file path
+          make_path($filePath, { mode => 0750 });  #create save file path if it doesn't exist
+          my $fileWeb = "$filePath/web-$idWeb.txt";
+          my $outWeb;
+          if (open($outWeb, '>', $fileWeb))  #write request to file
+          {
+            print $outWeb $strWeb;
+            close($outWeb);  #close request file
+          }
+        }
 
         my $outLog;
-        open($outLog, '>>', '/var/log/http.log') or die "laconic error: open log file failed - $!\n";  #open http log
-        print $outLog sprintf('%s %02d %02d:%02d:%02d', $txtMonths[$valMon], $valMday, $valHour, $valMin, $valSec) . " $strConn $idWeb \"$strMethod $strURL\" \"$strHost\" \"$strReferer\" \"$strAgent\" " . substr($strStatus, 0, 3) . " $recvSize\n";  #log http request
-        close($outLog);  #close log file
+        if (open($outLog, '>>', '/var/log/http.log'))  #open http log
+        {
+          print $outLog sprintf('%s %02d %02d:%02d:%02d', $txtMonths[$valMon], $valMday, $valHour, $valMin, $valSec) . " $strConn $idWeb \"$strMethod $strURL\" \"$strHost\" \"$strReferer\" \"$strAgent\" " . substr($strStatus, 0, 3) . " $recvSize\n";  #log http request
+          close($outLog);  #close log file
+        }
       }
     }
     if ($timeOut)
